@@ -52,6 +52,42 @@ app.get('/', (req, res, next) => {
 });
 
 //===========================================
+// Consultar medico por id
+//===========================================
+
+app.get('/:id', (req, res) => {
+
+    var id = req.params.id;
+
+    Medico.findById(id)
+        .populate( 'usuario', 'nombre correo img')
+        .populate( 'hospital')
+        .exec( (err, medico) => {
+
+            if (err){
+                return res.status(500).json({
+                    ok: false,
+                    mesnaje: 'Fallo busqueda por id',
+                    errors: err
+                });
+            }
+
+            if (!medico){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'El médico con id ' + id + 'No existe',
+                    errors: { message: 'No existe un médico con ese ID'}
+                });
+            }
+            res.status(200).json({
+                ok:true,
+                medico: medico,
+            });
+        });
+
+});
+
+//===========================================
 // Actualizar Medico
 //===========================================
 

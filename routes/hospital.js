@@ -50,6 +50,68 @@ app.get('/', (req, res, next) => {
 });
 
 //===========================================
+// Todos los hospitales
+//===========================================
+
+app.get('/todos', (req, res, next) => {
+
+    Hospital.find({})
+            .exec(
+                (err, hospitales ) => {
+
+                    if (err) {
+                        return res.status(500).json({
+                            ok: false,
+                            mensaje: 'Error cargando los hospitales',
+                            errors: err
+                        });
+                    }
+
+                    res.status(200).json({
+                        ok:true,
+                        hospitales: hospitales
+                    });
+
+                });
+
+});
+
+//===========================================
+// Buscar hospital por id
+//===========================================
+
+app.get('/:id', (req, res) =>{
+
+    var id = req.params.id;
+
+    Hospital.findById(id)
+        .populate( 'usuario', 'nombre img correo')
+        .exec( (err, hospital) => {
+
+            if(err){
+                return res.status(500).json({
+                    ok: false,
+                    mesnaje: 'Fallo busqueda por id',
+                    errors: err
+                });
+            }
+
+            if (!hospital){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'El hospital con id ' + id + 'No existe',
+                    errors: { message: 'No existe un hospital con ese ID'}
+                });
+            }
+
+            res.status(200).json({
+                ok:true,
+                hospital: hospital,
+            });
+        });
+});
+
+//===========================================
 // Actualizar Hospital
 //===========================================
 app.put('/:id', mdAutenticacion.verificarToken, (req, res) => {

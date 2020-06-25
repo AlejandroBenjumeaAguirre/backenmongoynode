@@ -30,7 +30,7 @@ async function verify(token) {
     // If request specified a G Suite domain:
     // const domain = payload['hd'];
     return {
-        nombre: payload.name,
+        nombre: payload.given_name,
         apellido: payload.family_name,
         correo: payload.email,
         img: payload.picture,
@@ -76,7 +76,7 @@ app.post('/google', async(req, res) =>{
                     ok: true,
                     usuario: usuarioBD,
                     token: token,
-                    id: usuarioBD._id
+                    menu: obtenerMenu( usuarioBD.rol )
                 });
             }
         } else {
@@ -105,18 +105,12 @@ app.post('/google', async(req, res) =>{
                     ok: true,
                     usuario: usuarioCreado,
                     token: token,
-                    id: usuarioCreado._id
+                    id: usuarioCreado._id,
+                    menu: obtenerMenu( usuarioCreado.rol)
                 });
             });
         }
     });
-
-   /*  res.status(200).json({
-        ok: true,
-        mensaje: 'todo ok',
-        googleUser: googleUser
-    });
- */
 });
 //===========================================
 // Autenticacion normal
@@ -138,7 +132,7 @@ app.post('/', (req, res ) => {
         if (!usuarioBD){
             return res.status(400).json({
                 ok:false,
-                mensaje: 'Credenciales incorrecta - email',
+                mensaje: 'Usuario o contraseña incorrectas',
                 errors: err
             });
         }
@@ -146,7 +140,7 @@ app.post('/', (req, res ) => {
         if ( !bcrypt.compareSync( body.password, usuarioBD.password)){
             return res.status(400).json({
                 ok:false,
-                mensaje: 'Credenciales incorrectas - password',
+                mensaje: 'Usuario o contraseña incorrectas',
                 errors: err
             });
         }
@@ -161,14 +155,44 @@ app.post('/', (req, res ) => {
             ok: true,
             usuario: usuarioBD,
             token: token,
-            id: usuarioBD._id
+            id: usuarioBD._id,
+            menu: obtenerMenu( usuarioBD.rol)
         });
 
     });
-
-    
-
 });
 
+function obtenerMenu( ROLE ){
+
+    var menu = [
+        {
+          titulo: 'Principal',
+          icono: 'mdi mdi-gauge',
+          submenu: [
+            { titulo: 'Dashboard', url: '/dashboard'},
+            { titulo: 'Graficas', url: '/graficas1'},
+            { titulo: 'ProgressBar', url: '/progress'},
+            { titulo: 'Promesas', url: '/promesas'},
+            { titulo: 'Rxjs', url: '/rxjs'}
+          ]
+        },
+        {
+          titulo: 'Opciones del usuario',
+          icono: 'mdi mdi-account-circle',
+          submenu: [
+            /* { titulo: 'Usuarios', icono: 'mdi mdi-account', url: '/usuarios'}, */
+            { titulo: 'Medicos', icono: 'mdi mdi-hospital', url: '/medicos'},
+            { titulo: 'Hospitales', icono: 'mdi mdi-hospital-building', url: '/hospitales'}
+          ]
+        }
+      ];
+    
+      if ( ROLE === 'ROL_ADMIN') {
+          menu[1].submenu.unshift( { titulo: 'Usuarios', icono: 'mdi mdi-account', url: '/usuarios'} );
+      }
+
+    return menu;
+
+}
 
 module.exports = app;
